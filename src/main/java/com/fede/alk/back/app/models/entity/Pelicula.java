@@ -1,5 +1,6 @@
 package com.fede.alk.back.app.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -41,6 +42,7 @@ public class Pelicula implements Serializable {
 
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "id_genero",referencedColumnName = "id")
+    @JsonIgnoreProperties(value = "peliculas")
     private Genero genero;
 
 }

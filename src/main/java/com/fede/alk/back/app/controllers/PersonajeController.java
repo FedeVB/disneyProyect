@@ -8,7 +8,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -17,7 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RestController(value = "/characters")
+@RestController
+@RequestMapping(value = "/characters")
 public class PersonajeController {
 
     @Autowired
@@ -76,7 +76,7 @@ public class PersonajeController {
     }
 
     @GetMapping(value = "/idMovie/{id}")
-    public ResponseEntity<?> porPelicula(@PathVariable(value = "idMovie") Integer id) {
+    public ResponseEntity<?> porPelicula(@PathVariable(value = "id") Integer id) {
         Map<String, Object> response = new HashMap<>();
         List<Personaje> personajes;
 
@@ -120,7 +120,7 @@ public class PersonajeController {
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
-                    .map(error -> "El campo"+error.getField()+" "+error.getDefaultMessage())
+                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errores",errores);
             response.put("mensaje", "Error al intentar actualizar el personaje");
@@ -147,7 +147,7 @@ public class PersonajeController {
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
-                    .map(error -> "El campo"+error.getField()+" "+error.getDefaultMessage())
+                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errores", errores);
             response.put("mensaje", "Error al intentar actualizar el personaje");

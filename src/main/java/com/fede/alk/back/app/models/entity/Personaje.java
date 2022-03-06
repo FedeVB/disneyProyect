@@ -1,8 +1,8 @@
 package com.fede.alk.back.app.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -35,6 +35,7 @@ public class Personaje implements Serializable {
     @JoinTable(name = "personajes_peliculas", joinColumns = @JoinColumn(name = "id_personaje",referencedColumnName = "id")
             , inverseJoinColumns = @JoinColumn(name = "id_pelicula",referencedColumnName = "id")
             , uniqueConstraints = {@UniqueConstraint(columnNames = {"id_personaje", "id_pelicula"})})
+    @JsonIgnoreProperties(value = "personajes")
     private List<Pelicula> peliculas;
 
 }

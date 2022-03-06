@@ -122,22 +122,22 @@ public class PeliculaController {
     @GetMapping(value = "/name/{name}")
     public ResponseEntity<?> porNombre(@PathVariable(value = "name") String name) {
         Map<String, Object> response = new HashMap<>();
-        Pelicula peliculaBusc;
+        List<Pelicula> peliculasBusc;
 
         try {
-            peliculaBusc = peliculaService.findByNombre(name).orElse(null);
+            peliculasBusc = peliculaService.findByNombre(name);
         } catch (DataAccessException e) {
             response.put("mensaje", "Error al buscar la pelicula en la base de datos");
             response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if (peliculaBusc == null) {
-            response.put("mensaje", "No se encontro la pelicula con el nombre : " + name + " en la base de datos");
+        if (peliculasBusc == null) {
+            response.put("mensaje", "No se encontraron peliculas con el nombre : " + name + " en la base de datos");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
-        response.put("pelicula", peliculaBusc);
+        response.put("pelicula", peliculasBusc);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

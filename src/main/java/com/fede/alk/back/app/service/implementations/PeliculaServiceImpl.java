@@ -21,8 +21,8 @@ public class PeliculaServiceImpl implements PeliculaService {
     }
 
     @Override
-    public Optional<Pelicula> findByNombre(String nombre) {
-        return peliculaRepository.findByTitulo(nombre);
+    public List<Pelicula> findByNombre(String nombre) {
+        return peliculaRepository.findAllByTitulo(nombre);
     }
 
     @Override

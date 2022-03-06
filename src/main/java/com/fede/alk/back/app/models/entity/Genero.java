@@ -1,5 +1,6 @@
 package com.fede.alk.back.app.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,6 +22,7 @@ public class Genero implements Serializable {
     @Lob
     private byte[] imagen;
 
-    @OneToMany(cascade = CascadeType.MERGE,mappedBy = "genero")
+    @OneToMany(cascade = CascadeType.MERGE, mappedBy = "genero")
+    @JsonIgnoreProperties(value = "genero")
     private List<Pelicula> peliculas;
 }

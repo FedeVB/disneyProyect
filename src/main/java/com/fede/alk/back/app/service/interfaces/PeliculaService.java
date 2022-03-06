@@ -15,7 +15,7 @@ public interface PeliculaService {
 
     List<Pelicula> findAllByOrderByTituloDesc();
 
-    Optional<Pelicula> findByNombre(String nombre);
+    List<Pelicula> findByNombre(String nombre);
 
     Optional<Pelicula> findById(Integer id);
 
