@@ -27,7 +27,7 @@ public class Usuario implements Serializable {
     private String email;
     private boolean enabled;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.MERGE,fetch = FetchType.EAGER)
     @JoinTable(name = "usuarios_autoridades", joinColumns = @JoinColumn(name = "id_usuario", referencedColumnName = "id")
             , inverseJoinColumns = @JoinColumn(name = "id_autoridad", referencedColumnName = "id"),
             uniqueConstraints = {@UniqueConstraint(columnNames = {"id_usuario", "id_autoridad"})})
