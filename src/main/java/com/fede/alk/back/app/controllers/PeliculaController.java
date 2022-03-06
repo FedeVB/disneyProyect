@@ -10,11 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -58,13 +61,13 @@ public class PeliculaController {
         Map<String, Object> response = new HashMap<>();
         Pelicula newPelicula;
 
-        if(result.hasErrors()){
+        if (result.hasErrors()) {
             System.out.println("Hay errores");
-            List<String> errores=result.getFieldErrors().stream()
-                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
+            List<String> errores = result.getFieldErrors().stream()
+                    .map(error -> "El campo " + error.getField() + " " + error.getDefaultMessage())
                     .collect(Collectors.toList());
-            response.put("errores",errores);
-            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+            response.put("errores", errores);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
         try {
             newPelicula = peliculaService.save(pelicula);
@@ -79,16 +82,16 @@ public class PeliculaController {
     }
 
     @PutMapping()
-    public ResponseEntity<?> editar(@Valid @RequestBody Pelicula pelicula,BindingResult result) {
+    public ResponseEntity<?> editar(@Valid @RequestBody Pelicula pelicula, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Pelicula peliculaUpdate;
 
-        if(result.hasErrors()){
-            List<String> errores=result.getFieldErrors().stream()
-                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors().stream()
+                    .map(error -> "El campo " + error.getField() + " " + error.getDefaultMessage())
                     .collect(Collectors.toList());
-            response.put("errores",errores);
-            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+            response.put("errores", errores);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
         try {
@@ -100,6 +103,33 @@ public class PeliculaController {
         }
 
         response.put("pelicula", peliculaUpdate);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/asignarImagen")
+    public ResponseEntity<?> asignarImagen(@RequestParam(value = "id", name = "id") Integer id
+            , @RequestParam(value = "foto", name = "foto") MultipartFile foto) {
+        Map<String, Object> response = new HashMap<>();
+
+        byte[] imagen = devolverImagen(foto);
+        Pelicula pelicula = peliculaService.findById(id).orElse(null);
+
+        if (pelicula == null) {
+            response.put("mensaje", "No se encontro la pelicula con el id : " + id + " en la base de datos");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            pelicula.setImagen(imagen);
+            peliculaService.save(pelicula);
+        } catch (DataAccessException e) {
+            response.put("mensaje", "Error al asignarle la imagen a la pelicula");
+            response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("mensaje", "La imagen ha sido cargada con exito");
+        response.put("pelicula", pelicula);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -190,5 +220,20 @@ public class PeliculaController {
 
         response.put("peliculas", peliculasOrder);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public byte[] devolverImagen(MultipartFile imagen) {
+
+        if (!imagen.isEmpty()) {
+
+            if (Objects.requireNonNull(imagen.getContentType()).endsWith(".jpg") || imagen.getContentType().endsWith(".png")) {
+                try {
+                    return imagen.getBytes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return new byte[0];
     }
 }

@@ -9,11 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,8 +34,8 @@ public class PersonajeController {
                 HttpStatus.OK);
     }
 
-    @GetMapping(value = "name/{name}")
-    public ResponseEntity<?> porNombre(@PathVariable(value = "nombre") String nombre) {
+    @GetMapping(value = "/name/{name}")
+    public ResponseEntity<?> porNombre(@PathVariable(value = "name") String nombre) {
         Map<String, Object> response = new HashMap<>();
         Personaje personajeBusc;
 
@@ -113,16 +116,16 @@ public class PersonajeController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping()
+    @PostMapping(value = "/crear")
     public ResponseEntity<?> crear(@Valid @RequestBody Personaje personaje, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Personaje newPersonaje;
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
-                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
+                    .map(error -> "El campo " + error.getField() + " " + error.getDefaultMessage())
                     .collect(Collectors.toList());
-            response.put("errores",errores);
+            response.put("errores", errores);
             response.put("mensaje", "Error al intentar actualizar el personaje");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
@@ -147,12 +150,13 @@ public class PersonajeController {
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
-                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
+                    .map(error -> "El campo " + error.getField() + " " + error.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errores", errores);
             response.put("mensaje", "Error al intentar actualizar el personaje");
             return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
         }
+
         if (personaje == null || personaje.getId() == null) {
             response.put("mensaje", "Error al actualizar el personaje");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
@@ -171,6 +175,33 @@ public class PersonajeController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/asignarImagen")
+    public ResponseEntity<?> agregarImagen(@RequestParam(value = "id", name = "id") Integer id,
+                                           @RequestParam(value = "foto", name = "foto") MultipartFile foto) {
+        Map<String, Object> response = new HashMap<>();
+
+        byte[] imagen = devolverImagen(foto);
+        Personaje personaje = personajeService.findById(id).orElse(null);
+        if (personaje == null) {
+            response.put("mensaje", "No se encontro el personaje con el id : " + id + " en la base de datos");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            personaje.setImagen(imagen);
+            personajeService.save(personaje);
+        } catch (DataAccessException e) {
+            response.put("mensaje", "Error al guardar la imagen");
+            response.put("error", e.getMessage().concat(": ".concat(e.getMostSpecificCause().getMessage())));
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("mensaje", "La imagen ha sido cargada con exito");
+        response.put("personaje", personaje);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    }
+
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<?> eliminar(@PathVariable(value = "id") Integer id) {
         Map<String, Object> response = new HashMap<>();
@@ -184,5 +215,20 @@ public class PersonajeController {
         }
         response.put("mensaje", "El personaje ha sido eliminado con exito");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public byte[] devolverImagen(MultipartFile imagen) {
+
+        if (!imagen.isEmpty()) {
+
+            if (Objects.requireNonNull(imagen.getContentType()).endsWith(".jpg") || imagen.getContentType().endsWith(".png")) {
+                try {
+                    return imagen.getBytes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return new byte[0];
     }
 }
