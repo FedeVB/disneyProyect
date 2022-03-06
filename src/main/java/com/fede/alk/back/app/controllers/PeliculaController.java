@@ -41,16 +41,16 @@ public class PeliculaController {
         } catch (DataAccessException e) {
             response.put("mensaje", "Ha ocurrido un error al intentar buscar la pelicula");
             response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-            return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         if (pelicula == null) {
             response.put("mensaje", "La pelicula con el id " + id + " no se encuentra en la base de datos");
-            return new ResponseEntity(response, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
         response.put("pelicula", pelicula);
-        return new ResponseEntity(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping()
@@ -59,11 +59,12 @@ public class PeliculaController {
         Pelicula newPelicula;
 
         if(result.hasErrors()){
+            System.out.println("Hay errores");
             List<String> errores=result.getFieldErrors().stream()
-                    .map(FieldError::getField)
+                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errores",errores);
-            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
         }
         try {
             newPelicula = peliculaService.save(pelicula);
@@ -84,10 +85,10 @@ public class PeliculaController {
 
         if(result.hasErrors()){
             List<String> errores=result.getFieldErrors().stream()
-                    .map(FieldError::getField)
+                    .map(error -> "El campo "+error.getField()+" "+error.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errores",errores);
-            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
         }
 
         try {

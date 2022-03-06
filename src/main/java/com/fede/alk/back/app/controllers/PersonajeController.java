@@ -120,10 +120,11 @@ public class PersonajeController {
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
-                    .map(FieldError::getField).collect(Collectors.toList());
-            response.put("errores", errores);
+                    .map(error -> "El campo"+error.getField()+" "+error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errores",errores);
             response.put("mensaje", "Error al intentar actualizar el personaje");
-            return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
         try {
@@ -146,7 +147,8 @@ public class PersonajeController {
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
-                    .map(error -> error.getField()).collect(Collectors.toList());
+                    .map(error -> "El campo"+error.getField()+" "+error.getDefaultMessage())
+                    .collect(Collectors.toList());
             response.put("errores", errores);
             response.put("mensaje", "Error al intentar actualizar el personaje");
             return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
