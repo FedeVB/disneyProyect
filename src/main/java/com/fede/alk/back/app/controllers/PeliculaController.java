@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +54,17 @@ public class PeliculaController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> crear(@RequestBody Pelicula pelicula) {
+    public ResponseEntity<?> crear(@Valid @RequestBody Pelicula pelicula, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Pelicula newPelicula;
 
+        if(result.hasErrors()){
+            List<String> errores=result.getFieldErrors().stream()
+                    .map(FieldError::getField)
+                    .collect(Collectors.toList());
+            response.put("errores",errores);
+            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
+        }
         try {
             newPelicula = peliculaService.save(pelicula);
         } catch (DataAccessException e) {
@@ -68,9 +78,17 @@ public class PeliculaController {
     }
 
     @PutMapping()
-    public ResponseEntity<?> editar(@RequestBody Pelicula pelicula) {
+    public ResponseEntity<?> editar(@Valid @RequestBody Pelicula pelicula,BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Pelicula peliculaUpdate;
+
+        if(result.hasErrors()){
+            List<String> errores=result.getFieldErrors().stream()
+                    .map(FieldError::getField)
+                    .collect(Collectors.toList());
+            response.put("errores",errores);
+            return new ResponseEntity<>(response,HttpStatus.NO_CONTENT);
+        }
 
         try {
             peliculaUpdate = peliculaService.save(pelicula);
