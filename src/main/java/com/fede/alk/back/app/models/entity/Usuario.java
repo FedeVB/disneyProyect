@@ -33,4 +33,8 @@ public class Usuario implements Serializable {
             uniqueConstraints = {@UniqueConstraint(columnNames = {"id_usuario", "id_autoridad"})})
     private List<Autoridad> autoridades;
 
+    @PrePersist
+    public void prePersist() {
+        this.enabled = true;
+    }
 }
