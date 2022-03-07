@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,10 +28,14 @@ public class InicioController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     @PostMapping(value = "/register")
     private ResponseEntity<?> register(@Valid @RequestBody Usuario usuario, BindingResult result) {
 
         Map<String, Object> response = new HashMap<>();
+        Usuario newUsuario;
 
         if (result.hasErrors()) {
             List<String> errores = result.getFieldErrors().stream()
@@ -38,7 +46,15 @@ public class InicioController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
-        Usuario newUsuario;
+
+        if (usuarioService.existsByUsername(usuario.getUsername())) {
+            response.put("mensaje", "Ya existe un usuario con este nombre");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        if (usuarioService.existsByEmail(usuario.getEmail())) {
+            response.put("mensaje", "Ya existe un usuario con este email");
+        }
+
         try {
             usuario.setAutoridades(Arrays.asList(new Autoridad(1, "USER")));
             newUsuario = usuarioService.save(usuario);
@@ -53,8 +69,13 @@ public class InicioController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/login")
-    private ResponseEntity<?> login() {
-        return null;
+    @PostMapping(value = "/login")
+    private ResponseEntity<?> login(@RequestParam(name = "username") String username, @RequestParam(value = "password") String password) {
+
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return new ResponseEntity<>("Ha iniciado session con exito", HttpStatus.OK);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class PeliculaController {
     @Autowired
     private PeliculaService peliculaService;
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<List<PeliculaDto>> listar() {
         return new ResponseEntity<List<PeliculaDto>>(peliculaService.findAll().stream()
