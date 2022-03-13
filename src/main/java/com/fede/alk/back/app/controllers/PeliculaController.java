@@ -2,12 +2,15 @@ package com.fede.alk.back.app.controllers;
 
 import com.fede.alk.back.app.models.dtos.PeliculaDto;
 import com.fede.alk.back.app.models.entity.Pelicula;
+import com.fede.alk.back.app.models.entity.Personaje;
 import com.fede.alk.back.app.service.interfaces.PeliculaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +31,7 @@ public class PeliculaController {
     @Autowired
     private PeliculaService peliculaService;
 
-    @PreAuthorize("hasRole('USER')")
+//    @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<List<PeliculaDto>> listar() {
         return new ResponseEntity<List<PeliculaDto>>(peliculaService.findAll().stream()
@@ -157,7 +160,7 @@ public class PeliculaController {
         List<Pelicula> peliculasBusc;
 
         try {
-            peliculasBusc = peliculaService.findByNombre(name);
+            peliculasBusc = peliculaService.findAllByNombre(name);
         } catch (DataAccessException e) {
             response.put("mensaje", "Error al buscar la pelicula en la base de datos");
             response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -227,8 +230,9 @@ public class PeliculaController {
     public byte[] devolverImagen(MultipartFile imagen) {
 
         if (!imagen.isEmpty()) {
-
-            if (Objects.requireNonNull(imagen.getContentType()).endsWith(".jpg") || imagen.getContentType().endsWith(".png")) {
+            System.out.println(imagen.getContentType());
+            if (imagen.getContentType().endsWith("jpg") || imagen.getContentType().endsWith("png")
+                    ||imagen.getContentType().endsWith("jpeg")) {
                 try {
                     return imagen.getBytes();
                 } catch (IOException e) {
@@ -237,5 +241,15 @@ public class PeliculaController {
             }
         }
         return new byte[0];
+    }
+
+    @GetMapping("/imagen/{nombre}")
+    public ResponseEntity<?> imagenes(@PathVariable(value = "nombre")String nombre){
+        Pelicula pelicula=peliculaService.findByTitulo(nombre).orElse(null);
+        byte[] foto=pelicula.getImagen();
+        HttpHeaders cabecera = new HttpHeaders();
+        cabecera.setContentType(MediaType.IMAGE_JPEG);
+
+        return new ResponseEntity<>(foto, cabecera, HttpStatus.OK);
     }
 }

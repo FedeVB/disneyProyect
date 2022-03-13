@@ -12,4 +12,5 @@ public interface PeliculaRepository extends JpaRepository<Pelicula,Integer> {
     List<Pelicula> findAllByGeneroId(Integer id);
     List<Pelicula> findAllByOrderByTituloAsc();
     List<Pelicula> findAllByOrderByTituloDesc();
+    Optional<Pelicula> findByTitulo(String titulo);
 }

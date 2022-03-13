@@ -24,7 +24,7 @@ public class PeliculaServiceImpl implements PeliculaService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Pelicula> findByNombre(String nombre) {
+    public List<Pelicula> findAllByNombre(String nombre) {
         return peliculaRepository.findAllByTitulo(nombre);
     }
 
@@ -50,6 +50,11 @@ public class PeliculaServiceImpl implements PeliculaService {
     @Override
     public Optional<Pelicula> findById(Integer id) {
         return peliculaRepository.findById(id);
+    }
+
+    @Override
+    public Optional<Pelicula> findByTitulo(String titulo) {
+        return peliculaRepository.findByTitulo(titulo);
     }
 
     @Transactional
