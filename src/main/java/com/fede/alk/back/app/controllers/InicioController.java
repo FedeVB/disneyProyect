@@ -1,5 +1,6 @@
 package com.fede.alk.back.app.controllers;
 
+import com.fede.alk.back.app.jwt.JwtProvider;
 import com.fede.alk.back.app.models.entity.Autoridad;
 import com.fede.alk.back.app.models.entity.Usuario;
 import com.fede.alk.back.app.service.interfaces.UsuarioService;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,9 +32,11 @@ public class InicioController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @PostMapping(value = "/register")
-    private ResponseEntity<?> register(@Valid @RequestBody Usuario usuario, BindingResult result) {
+    public ResponseEntity<?> register(@Valid @RequestBody Usuario usuario, BindingResult result) {
 
         Map<String, Object> response = new HashMap<>();
         Usuario newUsuario;
@@ -70,12 +74,18 @@ public class InicioController {
     }
 
     @PostMapping(value = "/login")
-    private ResponseEntity<?> login(@RequestParam(name = "username") String username, @RequestParam(value = "password") String password) {
-
+    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+        System.out.println(usuario.getUsername());
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(username, password));
+                .authenticate(new UsernamePasswordAuthenticationToken(usuario.getUsername(), usuario.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return new ResponseEntity<>("Ha iniciado session con exito", HttpStatus.OK);
+        String jwt = jwtProvider.generateToken(authentication);
+        UserDetails userDetails= (UserDetails) authentication.getPrincipal();
+        Map<String,Object> response=new HashMap<>();
+        response.put("token","Bearer "+jwt);
+        response.put("nombre",userDetails.getUsername());
+        response.put("roles",userDetails.getAuthorities());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

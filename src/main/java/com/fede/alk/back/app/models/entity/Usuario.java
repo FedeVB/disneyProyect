@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -33,6 +34,9 @@ public class Usuario implements Serializable {
             uniqueConstraints = {@UniqueConstraint(columnNames = {"id_usuario", "id_autoridad"})})
     private List<Autoridad> autoridades;
 
+    {
+        this.autoridades=new ArrayList<>();
+    }
     @PrePersist
     public void prePersist() {
         this.enabled = true;
