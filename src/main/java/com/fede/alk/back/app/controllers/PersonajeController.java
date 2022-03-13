@@ -5,7 +5,9 @@ import com.fede.alk.back.app.models.entity.Personaje;
 import com.fede.alk.back.app.service.interfaces.PersonajeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +18,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:4200", methods= {RequestMethod.GET,RequestMethod.POST})
 @RestController
 @RequestMapping(value = "/characters")
 public class PersonajeController {
@@ -27,11 +29,12 @@ public class PersonajeController {
     private PersonajeService personajeService;
 
     @GetMapping
-    public ResponseEntity<List<PersonajeDto>> listar() {
-        return new ResponseEntity<List<PersonajeDto>>(personajeService.findAll().stream()
+    public ResponseEntity<?> listar() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("personajes", personajeService.findAll().stream()
                 .map(personaje -> new PersonajeDto(personaje.getImagen(), personaje.getNombre()))
-                .collect(Collectors.toList()),
-                HttpStatus.OK);
+                .collect(Collectors.toList()));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping(value = "/name/{name}")
@@ -220,8 +223,9 @@ public class PersonajeController {
     public byte[] devolverImagen(MultipartFile imagen) {
 
         if (!imagen.isEmpty()) {
-
-            if (Objects.requireNonNull(imagen.getContentType()).endsWith(".jpg") || imagen.getContentType().endsWith(".png")) {
+            System.out.println(imagen.getContentType());
+            if (imagen.getContentType().endsWith("jpg") || imagen.getContentType().endsWith("png")
+            ||imagen.getContentType().endsWith("jpeg")) {
                 try {
                     return imagen.getBytes();
                 } catch (IOException e) {
@@ -230,5 +234,15 @@ public class PersonajeController {
             }
         }
         return new byte[0];
+    }
+
+    @GetMapping("/imagen/{nombre}")
+    public ResponseEntity<?> imagenes(@PathVariable(value = "nombre")String nombre){
+        Personaje personaje=personajeService.findByNombre(nombre).orElse(null);
+        byte[] foto=personaje.getImagen();
+        HttpHeaders cabecera = new HttpHeaders();
+        cabecera.setContentType(MediaType.IMAGE_JPEG);
+
+        return new ResponseEntity<>(foto, cabecera, HttpStatus.OK);
     }
 }
