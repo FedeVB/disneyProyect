@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:4200", methods= {RequestMethod.GET,RequestMethod.POST})
+@CrossOrigin(origins = "http://localhost:4200", methods= {RequestMethod.GET,RequestMethod.POST,RequestMethod.DELETE})
 @RestController
 @RequestMapping(value = "/characters")
 public class PersonajeController {
@@ -141,7 +141,7 @@ public class PersonajeController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        response.put("", "El personaje ha sido creado con exito");
+        response.put("mensaje", "El personaje ha sido creado con exito");
         response.put("personaje", newPersonaje);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
