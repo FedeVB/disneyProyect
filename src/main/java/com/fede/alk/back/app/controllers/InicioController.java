@@ -1,5 +1,6 @@
 package com.fede.alk.back.app.controllers;
 
+//import com.fede.alk.back.app.jwt.JwtProvider;
 import com.fede.alk.back.app.jwt.JwtProvider;
 import com.fede.alk.back.app.models.entity.Autoridad;
 import com.fede.alk.back.app.models.entity.Usuario;
@@ -8,6 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+//import org.springframework.security.authentication.AuthenticationManager;
+//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+//import org.springframework.security.core.Authentication;
+//import org.springframework.security.core.context.SecurityContextHolder;
+//import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

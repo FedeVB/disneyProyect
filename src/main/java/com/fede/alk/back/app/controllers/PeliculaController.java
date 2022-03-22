@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +25,12 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/movies")
+@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST,RequestMethod.DELETE,RequestMethod.PUT})
 public class PeliculaController {
 
     @Autowired
     private PeliculaService peliculaService;
 
-//    @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<List<PeliculaDto>> listar() {
         return new ResponseEntity<List<PeliculaDto>>(peliculaService.findAll().stream()

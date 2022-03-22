@@ -57,4 +57,10 @@ public class PersonajeServiceImpl implements PersonajeService {
     public void deleteById(Integer id) {
         personajeRepository.deleteById(id);
     }
+
+    @Transactional
+    @Override
+    public void deleteByNombre(String nombre) {
+        personajeRepository.deleteByNombre(nombre);
+    }
 }

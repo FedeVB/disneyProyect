@@ -15,4 +15,5 @@ public interface PersonajeService {
     Personaje save(Personaje personaje);
     void deleteById(Integer id);
 
+    void deleteByNombre(String nombre);
 }
