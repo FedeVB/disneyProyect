@@ -5,10 +5,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtProvider {
@@ -22,6 +24,7 @@ public class JwtProvider {
         User user = (User) authentication.getPrincipal();
         return JWT.create()
                 .withSubject(user.getUsername())
+                .withClaim("roles",user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .withExpiresAt(new Date(new Date().getTime() + expiration * 1000L))
                 .sign(Algorithm.HMAC512(secret));
     }
