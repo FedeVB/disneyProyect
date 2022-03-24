@@ -9,5 +9,5 @@ public interface GeneroService {
 
     List<Genero> findAll();
     Optional<Genero> findById(Integer id);
-    void save(Genero genero);
+    Genero save(Genero genero);
 }

@@ -62,22 +62,22 @@ public class PersonajeController {
     @GetMapping(value = "/age/{age}")
     public ResponseEntity<?> porEdad(@PathVariable(value = "age") Integer age) {
         Map<String, Object> response = new HashMap<>();
-        Personaje personajeBusc;
+        List<Personaje> personajesBusc;
 
         try {
-            personajeBusc = personajeService.findByAge(age).orElse(null);
+            personajesBusc = personajeService.findAllByAge(age);
         } catch (DataAccessException e) {
             response.put("mensaje", "Error al buscar el personaje en la base de datos");
             response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if (personajeBusc == null) {
-            response.put("mensaje", "El personaje con la edad : " + age + " no se encuentra en la base de datos");
+        if (personajesBusc.isEmpty()) {
+            response.put("mensaje", "No se encontraron personajes con la edad : " + age + " en la base de datos");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
-        response.put("personaje", personajeBusc);
+        response.put("personajes", personajesBusc);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -119,7 +119,7 @@ public class PersonajeController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/crear")
+    @PostMapping
     public ResponseEntity<?> crear(@Valid @RequestBody Personaje personaje, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Personaje newPersonaje;
@@ -129,7 +129,7 @@ public class PersonajeController {
                     .map(error -> "El campo " + error.getField() + " " + error.getDefaultMessage())
                     .collect(Collectors.toList());
             response.put("errores", errores);
-            response.put("mensaje", "Error al intentar actualizar el personaje");
+            response.put("mensaje", "Error al intentar crear el personaje");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
@@ -146,7 +146,7 @@ public class PersonajeController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping()
+    @PutMapping
     public ResponseEntity<?> editar(@Valid @RequestBody Personaje personaje, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Personaje personajeUpdate;
@@ -205,7 +205,7 @@ public class PersonajeController {
 
     }
 
-    @DeleteMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> eliminar(@PathVariable(value = "id") Integer id) {
         Map<String, Object> response = new HashMap<>();
 

@@ -43,16 +43,15 @@ public class PersonajeRepositoryTest {
 
     @Test
     void testFindByEdad() {
-        Personaje personaje1 = personajeRepository.findByEdad(20).orElse(null);
-        Personaje personaje2 = personajeRepository.findByEdad(22).orElse(null);
-        Personaje personaje3 = personajeRepository.findByEdad(30).orElse(null);
+        List<Personaje> personajes1 = personajeRepository.findAllByEdad(20);
+        List<Personaje> personajes2 = personajeRepository.findAllByEdad(22);
+        List<Personaje> personajes3 = personajeRepository.findAllByEdad(30);
 
-        Assertions.assertEquals("Susan", personaje1.getNombre());
-        Assertions.assertEquals(20,personaje1.getEdad());
-        Assertions.assertEquals("Susana", personaje2.getNombre());
-        Assertions.assertEquals(22,personaje2.getEdad());
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            personaje3.getNombre();
+        Assertions.assertEquals(1, personajes1.size());
+        Assertions.assertEquals(1, personajes2.size());
+        Assertions.assertTrue(personajes3.isEmpty());
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            personajes3.get(5);
         });
     }
 

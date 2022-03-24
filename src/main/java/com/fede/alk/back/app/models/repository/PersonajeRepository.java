@@ -10,6 +10,6 @@ public interface PersonajeRepository extends JpaRepository<Personaje,Integer> {
 
     List<Personaje> findAllByPeliculasId(Integer id);
     Optional<Personaje> findByNombre(String nombre);
-    Optional<Personaje> findByEdad(Integer edad);
+    List<Personaje> findAllByEdad(Integer edad);
     void deleteByNombre (String nombre);
 }

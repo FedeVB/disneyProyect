@@ -42,8 +42,8 @@ public class PersonajeServiceImpl implements PersonajeService {
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<Personaje> findByAge(Integer edad) {
-        return personajeRepository.findByEdad(edad);
+    public List<Personaje> findAllByAge(Integer edad) {
+        return personajeRepository.findAllByEdad(edad);
     }
 
     @Transactional

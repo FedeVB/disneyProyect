@@ -1,5 +1,6 @@
 package com.fede.alk.back.app.jwt;
 
+import com.auth0.jwt.JWT;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
+
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
@@ -24,7 +27,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = extraerToken(request);
-        if (token != null && provider.validateToken(token)) {
+        if (token != null && provider.validateToken(token) && !expiredToken(token)) {
             String username = provider.obetenerNombre(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken auth =
@@ -32,6 +35,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
         filterChain.doFilter(request, response);
+    }
+
+    private boolean expiredToken(String token) {
+        return JWT.decode(token).getExpiresAt().getTime() < new Date().getTime();
     }
 
     private String extraerToken(HttpServletRequest request) {

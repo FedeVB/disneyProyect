@@ -11,7 +11,7 @@ public interface PersonajeService {
     List<Personaje> findAllPeliculasId(Integer id);
     Optional<Personaje> findById(Integer id);
     Optional<Personaje> findByNombre(String nombre);
-    Optional<Personaje> findByAge(Integer age);
+    List<Personaje> findAllByAge(Integer age);
     Personaje save(Personaje personaje);
     void deleteById(Integer id);
 
