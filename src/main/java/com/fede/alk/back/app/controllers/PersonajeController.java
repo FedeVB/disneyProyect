@@ -5,6 +5,7 @@ import com.fede.alk.back.app.models.entity.Foto;
 import com.fede.alk.back.app.models.entity.Personaje;
 import com.fede.alk.back.app.service.interfaces.FotoService;
 import com.fede.alk.back.app.service.interfaces.PersonajeService;
+import com.fede.alk.back.app.utils.ContentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
@@ -194,7 +195,7 @@ public class PersonajeController {
         }
 
         Foto imagen = new Foto();
-        imagen.setContent(devolverImagen(foto));
+        imagen.setContent(ContentUtil.devolverContent(foto));
         imagen = fotoService.save(imagen);
         try {
             if (personaje.getUrlFoto() != null) {
@@ -229,21 +230,6 @@ public class PersonajeController {
         }
         response.put("mensaje", "El personaje ha sido eliminado con exito");
         return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    public byte[] devolverImagen(MultipartFile imagen) {
-
-        if (!imagen.isEmpty()) {
-            if (imagen.getContentType().endsWith("jpg") || imagen.getContentType().endsWith("png")
-                    || imagen.getContentType().endsWith("jpeg")) {
-                try {
-                    return imagen.getBytes();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return new byte[0];
     }
 
     @GetMapping("/imagen/{id}")

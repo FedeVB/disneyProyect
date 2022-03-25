@@ -5,6 +5,7 @@ import com.fede.alk.back.app.models.entity.Foto;
 import com.fede.alk.back.app.models.entity.Pelicula;
 import com.fede.alk.back.app.service.interfaces.FotoService;
 import com.fede.alk.back.app.service.interfaces.PeliculaService;
+import com.fede.alk.back.app.utils.ContentUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
@@ -124,7 +125,7 @@ public class PeliculaController {
         }
 
         Foto imagen = new Foto();
-        imagen.setContent(devolverImagen(foto));
+        imagen.setContent(ContentUtil.devolverContent(foto));
         imagen = fotoService.save(imagen);
 
         try {
@@ -234,22 +235,6 @@ public class PeliculaController {
 
         response.put("peliculas", peliculasOrder);
         return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    public byte[] devolverImagen(MultipartFile imagen) {
-
-        if (!imagen.isEmpty()) {
-            System.out.println(imagen.getContentType());
-            if (imagen.getContentType().endsWith("jpg") || imagen.getContentType().endsWith("png")
-                    || imagen.getContentType().endsWith("jpeg")) {
-                try {
-                    return imagen.getBytes();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return new byte[0];
     }
 
     @GetMapping("/imagen/{id}")
