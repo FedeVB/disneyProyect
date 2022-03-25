@@ -134,7 +134,6 @@ public class PeliculaController {
                         .replace("http://localhost:8080/movies/imagen/", "")));
             }
             pelicula.setUrlFoto("http://localhost:8080/movies/imagen/" + imagen.getId());
-            pelicula.setFoto(imagen);
             peliculaService.save(pelicula);
         } catch (DataAccessException e) {
             fotoService.deleteById(imagen.getId());

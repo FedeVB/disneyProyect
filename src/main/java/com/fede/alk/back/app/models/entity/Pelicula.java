@@ -27,8 +27,6 @@ public class Pelicula implements Serializable {
     private Integer id;
     @NotBlank
     private String titulo;
-    //    @Lob
-//    private byte[] imagen;
     @Column(name = "fecha_creacion")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate fechaCreacion;
@@ -38,9 +36,7 @@ public class Pelicula implements Serializable {
     private Integer calificacion;
 
     private String urlFoto;
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_foto", referencedColumnName = "id")
-    private Foto foto;
+
     @ManyToMany(cascade = CascadeType.PERSIST, mappedBy = "peliculas", fetch = FetchType.EAGER)
     private List<Personaje> personajes;
 
