@@ -31,7 +31,7 @@ public class Personaje implements Serializable {
     @Lob
     private byte[] imagen;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
     @JoinTable(name = "personajes_peliculas", joinColumns = @JoinColumn(name = "id_personaje",referencedColumnName = "id")
             , inverseJoinColumns = @JoinColumn(name = "id_pelicula",referencedColumnName = "id")
             , uniqueConstraints = {@UniqueConstraint(columnNames = {"id_personaje", "id_pelicula"})})

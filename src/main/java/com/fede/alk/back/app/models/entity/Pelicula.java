@@ -37,10 +37,10 @@ public class Pelicula implements Serializable {
     @Max(value = 5)
     private Integer calificacion;
 
-    @ManyToMany(cascade = CascadeType.MERGE,mappedBy = "peliculas")
+    @ManyToMany(cascade = CascadeType.PERSIST,mappedBy = "peliculas",fetch = FetchType.EAGER)
     private List<Personaje> personajes;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "id_genero",referencedColumnName = "id")
     @JsonIgnoreProperties(value = "peliculas")
     private Genero genero;

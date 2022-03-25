@@ -59,7 +59,7 @@ public class PeliculaController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<?> crear(@Valid @RequestBody Pelicula pelicula, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Pelicula newPelicula;
@@ -84,7 +84,7 @@ public class PeliculaController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping()
+    @PutMapping
     public ResponseEntity<?> editar(@Valid @RequestBody Pelicula pelicula, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Pelicula peliculaUpdate;
