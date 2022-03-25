@@ -19,8 +19,8 @@ public class Genero implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String nombre;
-    @Lob
-    private byte[] imagen;
+
+    private String urlFoto;
 
     @OneToMany(cascade = CascadeType.MERGE, mappedBy = "genero")
     @JsonIgnoreProperties(value = "genero")

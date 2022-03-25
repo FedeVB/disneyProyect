@@ -28,8 +28,8 @@ public class Personaje implements Serializable {
     private Double peso;
     @NotBlank
     private String historia;
-    @Lob
-    private byte[] imagen;
+
+    private String urlFoto;
 
     @ManyToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
     @JoinTable(name = "personajes_peliculas", joinColumns = @JoinColumn(name = "id_personaje",referencedColumnName = "id")

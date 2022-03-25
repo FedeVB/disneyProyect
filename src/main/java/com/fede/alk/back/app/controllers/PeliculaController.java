@@ -1,8 +1,9 @@
 package com.fede.alk.back.app.controllers;
 
 import com.fede.alk.back.app.models.dtos.PeliculaDto;
+import com.fede.alk.back.app.models.entity.Foto;
 import com.fede.alk.back.app.models.entity.Pelicula;
-import com.fede.alk.back.app.models.entity.Personaje;
+import com.fede.alk.back.app.service.interfaces.FotoService;
 import com.fede.alk.back.app.service.interfaces.PeliculaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,16 +24,18 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/movies")
-@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST,RequestMethod.DELETE,RequestMethod.PUT})
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
 public class PeliculaController {
 
     @Autowired
     private PeliculaService peliculaService;
+    @Autowired
+    private FotoService fotoService;
 
     @GetMapping
     public ResponseEntity<List<PeliculaDto>> listar() {
         return new ResponseEntity<List<PeliculaDto>>(peliculaService.findAll().stream()
-                .map(pelicula -> new PeliculaDto(pelicula.getImagen(), pelicula.getTitulo(), pelicula.getFechaCreacion()))
+                .map(pelicula -> new PeliculaDto(pelicula.getUrlFoto(), pelicula.getTitulo(), pelicula.getFechaCreacion()))
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
 
@@ -109,12 +111,11 @@ public class PeliculaController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/asignarImagen")
+    @PostMapping(value = "/imagen")
     public ResponseEntity<?> asignarImagen(@RequestParam(value = "id", name = "id") Integer id
             , @RequestParam(value = "foto", name = "foto") MultipartFile foto) {
         Map<String, Object> response = new HashMap<>();
 
-        byte[] imagen = devolverImagen(foto);
         Pelicula pelicula = peliculaService.findById(id).orElse(null);
 
         if (pelicula == null) {
@@ -122,10 +123,20 @@ public class PeliculaController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
+        Foto imagen = new Foto();
+        imagen.setContent(devolverImagen(foto));
+        imagen = fotoService.save(imagen);
+
         try {
-            pelicula.setImagen(imagen);
+            if (pelicula.getUrlFoto() != null) {
+                fotoService.deleteById(Integer.parseInt(pelicula.getUrlFoto()
+                        .replace("http://localhost:8080/movies/imagen/", "")));
+            }
+            pelicula.setUrlFoto("http://localhost:8080/movies/imagen/" + imagen.getId());
+            pelicula.setFoto(imagen);
             peliculaService.save(pelicula);
         } catch (DataAccessException e) {
+            fotoService.deleteById(imagen.getId());
             response.put("mensaje", "Error al asignarle la imagen a la pelicula");
             response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -230,7 +241,7 @@ public class PeliculaController {
         if (!imagen.isEmpty()) {
             System.out.println(imagen.getContentType());
             if (imagen.getContentType().endsWith("jpg") || imagen.getContentType().endsWith("png")
-                    ||imagen.getContentType().endsWith("jpeg")) {
+                    || imagen.getContentType().endsWith("jpeg")) {
                 try {
                     return imagen.getBytes();
                 } catch (IOException e) {
@@ -241,13 +252,13 @@ public class PeliculaController {
         return new byte[0];
     }
 
-    @GetMapping("/imagen/{nombre}")
-    public ResponseEntity<?> imagenes(@PathVariable(value = "nombre")String nombre){
-        Pelicula pelicula=peliculaService.findByTitulo(nombre).orElse(null);
-        byte[] foto=pelicula.getImagen();
+    @GetMapping("/imagen/{id}")
+    public ResponseEntity<?> imagenes(@PathVariable(value = "id") Integer id) {
+        Foto foto = fotoService.findById(id).orElse(null);
+        byte[] imagen = foto.getContent();
         HttpHeaders cabecera = new HttpHeaders();
         cabecera.setContentType(MediaType.IMAGE_JPEG);
 
-        return new ResponseEntity<>(foto, cabecera, HttpStatus.OK);
+        return new ResponseEntity<>(imagen, cabecera, HttpStatus.OK);
     }
 }

@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class PersonajeDto {
-    private byte[] imagen;
+    private String imagen;
     private String nombre;
 }

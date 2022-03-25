@@ -1,7 +1,9 @@
 package com.fede.alk.back.app.controllers;
 
 import com.fede.alk.back.app.models.dtos.PersonajeDto;
+import com.fede.alk.back.app.models.entity.Foto;
 import com.fede.alk.back.app.models.entity.Personaje;
+import com.fede.alk.back.app.service.interfaces.FotoService;
 import com.fede.alk.back.app.service.interfaces.PersonajeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -20,19 +22,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST,RequestMethod.DELETE,RequestMethod.PUT})
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
 @RestController
 @RequestMapping(value = "/characters")
 public class PersonajeController {
 
     @Autowired
     private PersonajeService personajeService;
+    @Autowired
+    private FotoService fotoService;
 
     @GetMapping
     public ResponseEntity<?> listar() {
         Map<String, Object> response = new HashMap<>();
         response.put("personajes", personajeService.findAll().stream()
-                .map(personaje -> new PersonajeDto(personaje.getImagen(), personaje.getNombre()))
+                .map(personaje -> new PersonajeDto(personaje.getUrlFoto(), personaje.getNombre()))
                 .collect(Collectors.toList()));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -178,22 +182,29 @@ public class PersonajeController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/asignarImagen")
+    @PostMapping(value = "/imagen")
     public ResponseEntity<?> agregarImagen(@RequestParam(value = "id", name = "id") Integer id,
                                            @RequestParam(value = "foto", name = "foto") MultipartFile foto) {
         Map<String, Object> response = new HashMap<>();
 
-        byte[] imagen = devolverImagen(foto);
         Personaje personaje = personajeService.findById(id).orElse(null);
         if (personaje == null) {
             response.put("mensaje", "No se encontro el personaje con el id : " + id + " en la base de datos");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
+        Foto imagen = new Foto();
+        imagen.setContent(devolverImagen(foto));
+        imagen = fotoService.save(imagen);
         try {
-            personaje.setImagen(imagen);
+            if (personaje.getUrlFoto() != null) {
+                fotoService.deleteById(Integer.parseInt(personaje.getUrlFoto()
+                        .replace("http://localhost:8080/characters/imagen/", "")));
+            }
+            personaje.setUrlFoto("http://localhost:8080/characters/imagen/" + imagen.getId());
             personajeService.save(personaje);
         } catch (DataAccessException e) {
+            fotoService.deleteById(imagen.getId());
             response.put("mensaje", "Error al guardar la imagen");
             response.put("error", e.getMessage().concat(": ".concat(e.getMostSpecificCause().getMessage())));
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -223,9 +234,8 @@ public class PersonajeController {
     public byte[] devolverImagen(MultipartFile imagen) {
 
         if (!imagen.isEmpty()) {
-            System.out.println(imagen.getContentType());
             if (imagen.getContentType().endsWith("jpg") || imagen.getContentType().endsWith("png")
-            ||imagen.getContentType().endsWith("jpeg")) {
+                    || imagen.getContentType().endsWith("jpeg")) {
                 try {
                     return imagen.getBytes();
                 } catch (IOException e) {
@@ -236,10 +246,10 @@ public class PersonajeController {
         return new byte[0];
     }
 
-    @GetMapping("/imagen/{nombre}")
-    public ResponseEntity<?> imagenes(@PathVariable(value = "nombre")String nombre){
-        Personaje personaje=personajeService.findByNombre(nombre).orElse(null);
-        byte[] foto=personaje.getImagen();
+    @GetMapping("/imagen/{id}")
+    public ResponseEntity<?> imagenes(@PathVariable(value = "id") Integer id) {
+        Foto imagen = fotoService.findById(id).orElse(null);
+        byte[] foto = imagen.getContent();
         HttpHeaders cabecera = new HttpHeaders();
         cabecera.setContentType(MediaType.IMAGE_JPEG);
 
